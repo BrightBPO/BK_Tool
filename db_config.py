@@ -4,11 +4,11 @@ from mysql.connector import Error
 import os
 
 # Database configuration
-db_host = os.getenv("DB_HOST")  # Use ENV variable, default to localhost
+db_host = "localhost"  # Use ENV variable, default to localhost
 db_port = 3306
-db_user = os.getenv("DB_USER")
-db_password = os.getenv("DB_PASSWORD")
-db_name = os.getenv("DB_NAME")
+db_user = "admin"
+db_password = "Admin@123"
+db_name = "pacer_bankruptcy"
 
 # Peewee database instance
 db = MySQLDatabase(None)  # Placeholder, configure it later
