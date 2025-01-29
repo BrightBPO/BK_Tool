@@ -1,0 +1,57 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Environment variables
+.env
+*.env
+
+# Docker
+*.dockerignore
+Dockerfile~
+docker-compose.override.yml
+docker-compose.override.yaml
+docker-compose.yml
+Dockerfile
+
+# Ignore Docker volumes and containers
+volumes/
+containers/
+
+# MySQL data
+mysql_data/
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.iml
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore compiled and cache files
+*.swp
+*.swo
+.nosync
+
