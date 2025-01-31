@@ -8,16 +8,18 @@ body {
     align-items: center;
     margin-bottom: 20px;
 }
-.add-case-button {
+.add-case-button, .refresh-cases-button {
     padding: 10px 20px;
     background-color: #4CAF50;
+    width: 150px;
+    height: 40px;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 14px;
 }
-.add-case-button:hover {
+.add-case-button:hover, .refresh-cases-button:hover {
     background-color: #45a049;
 }
 table {
@@ -118,12 +120,32 @@ th {
     transition: background-color 0.3s ease;
     display: block;
     width: 100%;
+    height: 38px;
     margin: 10px 0;
     font-size: 14px;
 }
 
 .button-delete:hover {
     background-color: darkred;
+}
+
+.button-refresh {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: block;
+    width: 100%;
+    height: 38px;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.button-refresh:hover {
+    background-color: #45a049;
 }
 
 .modal {
@@ -177,4 +199,20 @@ th {
 
 .btn-secondary:hover {
     background-color: #45a049;
+}
+
+.button-loader {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid white;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
