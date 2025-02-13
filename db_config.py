@@ -2,13 +2,24 @@ from peewee import MySQLDatabase
 import mysql.connector
 from mysql.connector import Error
 import os
+from dotenv import load_dotenv  # Import dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 # Database configuration
-db_host = "localhost"  # Use ENV variable, default to localhost
+db_host = os.getenv("DB_HOST")
 db_port = 3306
-db_user = "admin"
-db_password = "Admin@123"
-db_name = "pacer_bankruptcy"
+db_user = os.getenv("DB_USER")
+db_password = os.getenv("DB_PASSWORD")
+db_name = os.getenv("DB_NAME")
+
+# Check if any variable is missing
+missing_vars = [var for var in ["DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME"] if os.getenv(var) is None]
+
+if missing_vars:
+    raise RuntimeError(f"Missing environment variables: {', '.join(missing_vars)}")
+
 
 # Peewee database instance
 db = MySQLDatabase(None)  # Placeholder, configure it later
