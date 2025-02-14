@@ -13,7 +13,7 @@ class BaseModel(Model):
     class Meta:
         database = db
 
-class Case(Model):
+class Case(BaseModel):
     case_id = AutoField()
     case_number = CharField(max_length=50, unique=True)  # Case number, must be unique
     debtor_name = CharField(max_length=255)  # Name of the debtor
@@ -23,11 +23,11 @@ class Case(Model):
     created_at = DateField(null=True)  # created date of the case
 
     class Meta:
-        database = db  # Link the model to the database
         table_name = 'Case'
 
 with db.connection_context():
-    db.create_tables([Case])
+        db.create_tables([Case])
+
 
 @case_blueprint.route('/add_case', methods=['POST'])
 def add_case():
