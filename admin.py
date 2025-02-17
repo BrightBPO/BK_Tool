@@ -1,3 +1,5 @@
+import random
+import string
 from flask import Blueprint, jsonify, request, session
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from peewee import Model, CharField, DateTimeField, AutoField
@@ -6,10 +8,10 @@ from datetime import datetime
 from peewee import IntegrityError, DoesNotExist
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
 admin_blueprint = Blueprint('admin', __name__, url_prefix='/admin')
 
 login_manager = LoginManager()
-
 class BaseModel(Model):
     """
     Base model that defines the database for all models.
@@ -111,8 +113,6 @@ def login_admin():
         
         login_user(admin)  # Maintain session
         session.modified = True  # Ensure Flask updates session state
-
-        print("In login")
         
         return jsonify({
             'message': 'login successful!',
@@ -126,36 +126,48 @@ def login_admin():
 
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
-    
 
+    
 @admin_blueprint.route('/logout', methods=['POST'])
 @login_required
 def logout_admin():
     try:
-        print("Before logout:", session)  # Print session data before clearing
         logout_user()
-        session.clear()
-        print("After logout:", session)  # Check if session is actually cleared
-        
+        session.pop('_user_id', None)  # Removes only the logged-in user’s session ID
+
         return jsonify({'message': 'Logged out successfully'}), 200
     
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
 
-@admin_blueprint.route('/profile', methods=['GET'])
+@admin_blueprint.route('/profile', methods=['POST'])
 @login_required
 def profile():
     try:
+        data = request.get_json()
+
+        email = data['email']
+
+        if email:  # Fetch a specific user’s profile
+            with db.connection_context():
+                admin = Admin.get_or_none(Admin.email == email)
+            
+            if not admin:
+                return jsonify({"error": "User not found"}), 404
+        else:  # Default to the currently logged-in user
+            admin = current_user
+
         return jsonify({
-            'email': current_user.email,
-            'first_name': current_user.first_name,
-            'last_name': current_user.last_name,
-            'role': current_user.role
+            'email': admin.email,
+            'first_name': admin.first_name,
+            'last_name': admin.last_name,
+            'role': admin.role
         }), 200
-    
+
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
     
 # keep this route disabled in production for now, will be used in future
 @admin_blueprint.route('/delete', methods=['POST'])
@@ -179,9 +191,86 @@ def delete_admin():
 
             admin.delete_instance()
 
-        session.clear()  # Clear session after deletion
+        session.pop('_user_id', None)  # Removes only the logged-in user’s session ID
         
         return jsonify({'message': 'Admin deleted successfully!'}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+
+
+@admin_blueprint.route('/change-password', methods=['POST'])
+@login_required
+def change_password():
+    """
+    API endpoint to change admin password 
+    """
+    try:
+        data = request.get_json()
+
+        # Validate Input
+        if not data or 'email' not in data or 'current_password' not in data or 'new_password' not in data:
+            return jsonify({"error": "Email, current password and new password is required"}), 400
+        
+        email = data['email']
+        current_password = data['current_password']
+        new_password = generate_password_hash(data['new_password'])
+
+        with db.connection_context():
+            try:
+                admin = Admin.get(Admin.email == email)
+            except DoesNotExist:
+                return jsonify({"message": "Invalid email or current password"}), 401
+
+        if not admin or not check_password_hash(admin.password, current_password):
+            return jsonify({"message": "Invalid email or current password"}), 401
+        
+        admin.password = new_password
+        admin.save()
+
+        return jsonify({'message': 'password updated successfully!'}), 200
+    
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+    
+
+@admin_blueprint.route('/recover-password', methods=['POST'])
+def recover_password():
+    try:
+        from utils import send_email
+        
+        data = request.get_json()
+        email = data.get('email')
+
+        if not email:
+            return jsonify({"error": "Email is required"}), 400
+        
+        with db.connection_context():
+            admin = Admin.get_or_none(Admin.email == email)
+
+        if not admin:
+            return jsonify({"error": "Amin not found"}), 404
+
+        # Generate a random 12-character password
+        new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+        
+        print(new_password)
+
+        # Hash the password before storing
+        hashed_password = generate_password_hash(new_password)
+
+        with db.connection_context():
+            admin.password = hashed_password
+            admin.save()
+
+        # Send email with the new password
+        send_email(
+            subject="Password Reset",
+            recipients=[email],
+            body=f"Your new password is: {new_password}\nPlease change it after logging in."
+        )
+
+        return jsonify({"message": "New password sent to your email"}), 200
 
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
