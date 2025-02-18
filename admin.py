@@ -1,6 +1,6 @@
 import random
 import string
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request, session, url_for, redirect
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from peewee import Model, CharField, DateTimeField, AutoField
 from db_config import db
@@ -49,12 +49,16 @@ def load_user(admin_id):
 
 # keep this route disabled once the admin is registered, will be used in future 
 @admin_blueprint.route('/register', methods=['POST']) 
+@login_required
 def register_admin():
     """
     API endpoint to register admin in the database.
     TODO role should not be the input, only SU can change role
     """
     try:
+        if current_user.role != 'super admin':
+            return jsonify({"error": "Unauthorized"}), 403
+    
         data = request.get_json()
 
         # Input Validation
@@ -99,17 +103,17 @@ def login_admin():
         if not data or 'email' not in data or 'password' not in data:
             return jsonify({"error": "Email and password are required"}), 400
         
-        email = data['email']
-        password = data['password']
-        
+        email = data.get('email')
+        password = data.get('password')
+
         with db.connection_context():
             try:
                 admin = Admin.get(Admin.email == email)
             except DoesNotExist:
-                return jsonify({"message": "Invalid email or password"}), 401
+                return jsonify({"message": "Invalid credentials"}), 401
 
         if not admin or not check_password_hash(admin.password, password):
-            return jsonify({"message": "Invalid email or password"}), 401
+            return jsonify({"message": "Invalid credentials"}), 401
         
         login_user(admin)  # Maintain session
         session.modified = True  # Ensure Flask updates session state
@@ -147,7 +151,7 @@ def profile():
     try:
         data = request.get_json()
 
-        email = data['email']
+        email = data.get('email')
 
         if email:  # Fetch a specific user’s profile
             with db.connection_context():
@@ -170,7 +174,7 @@ def profile():
 
     
 # keep this route disabled in production for now, will be used in future
-@admin_blueprint.route('/delete', methods=['POST'])
+@admin_blueprint.route('/delete', methods=['DELETE'])
 def delete_admin():
     """
     API endpoint to delete an admin.
