@@ -1,61 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bankcruptcy Case Manager</title>
-    <link rel="stylesheet" href="static/css/styles.css">
+    <title>Bankruptcy Case Manager</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="static/css/styles_v2.css">
 </head>
-<body>
-    <div id="snackbar"></div>
 
-    <div class="header">
-        <h1>Bankruptcy Case Manager</h1>
-        <div class="buttons">
-            <button class="refresh-cases-button" onclick="refreshAllCases()">Refresh Cases</button>
-            <button class="add-case-button" onclick="showAddCaseForm()">Add Case</button>
+<body class="bg-light">
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-dark text-white min-vh-100 p-3">
+                <h4 class="mb-4">Dashboard</h4>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link text-white">Dashboard</a>
+                        <a href="#" class="nav-link text-white" onclick="loadContent('change-password')">Change
+                            Password</a>
+                        <a href="#" class="nav-link text-white" onclick="loadContent('change-pacer-username')">Change
+                            PACER Username</a>
+                        <a href="#" class="nav-link text-white" onclick="loadContent('change-pacer-password')">Change
+                            PACER Password</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-danger mt-3 w-100" onclick="logout()">Logout</button>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1>Bankruptcy Case Manager</h1>
+                    <div>
+                        <button id="refresh-cases-button" class="btn btn-primary" onclick="refreshAllCases()">Refresh
+                            Cases</button>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#add-case-modal">Add
+                            Case</button>
+                    </div>
+                </div>
+
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Case Number</th>
+                            <th>Debtor Name</th>
+                            <th>Court</th>
+                            <th>Filing Date</th>
+                            <th>Dismissed Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cases-table-body">
+                        <!-- Table rows will be dynamically added here -->
+                    </tbody>
+                </table>
+
+                <div id="content">
+                    <h2>Welcome to the Admin Dashboard</h2>
+                    <p>Select an option from the sidebar.</p>
+                </div>
+            </main>
         </div>
-    </div>    
-
-    <table>
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Case Number</th>
-                <th>Debtor Name</th>
-                <th>Court</th>
-                <th>Filing Date</th>
-                <th>Dismissed Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody id="cases-table-body">
-            <!-- Table rows will be dynamically added here -->
-        </tbody>
-    </table>
-
-    <!-- Modal for adding a case -->
-    <div id="add-case-modal">
-        <h2>Add New Case</h2>
-        <form id="add-case-form">
-            <input type="text" id="case_number" name="case_number", placeholder="Enter Case Number" required><br><br>
-            
-            <button type="button" onclick="submitAddCaseForm()">Submit</button>
-            <button type="button" onclick="hideAddCaseForm()">Cancel</button>
-        </form>
     </div>
 
-    <div id="deleteModal" class="modal">
-        <div class="modal-content">
-            <p id="modal-message">Are you sure you want to delete this case?</p>
-            <div class="modal-actions">
-                <button id="cancel-delete" class="btn btn-secondary">Cancel</button>
-                <button id="confirm-delete" class="btn btn-danger">Confirm</button>
+    <!-- Add Case Modal -->
+    <div class="modal fade" id="add-case-modal" tabindex="-1" aria-labelledby="addCaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addCaseModalLabel">Add New Case</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-case-form">
+                        <div class="mb-3">
+                            <label for="case_number" class="form-label">Case Number</label>
+                            <input type="text" id="case_number" name="case_number" class="form-control"
+                                placeholder="Enter Case Number" required>
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" id="submit-btn" class="btn btn-primary"
+                                onclick="addCase()">Submit</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>    
+    </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center">
+                    <p id="modal-message">Are you sure you want to delete this case?</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button id="cancel-delete" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button id="confirm-delete" class="btn btn-danger">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="snackbar"></div>
+
+    <!-- Bootstrap & Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function loadContent(page) {
+            const content = {
+                "change-password": "<h2>Change Password</h2><p>Form to change password goes here.</p>",
+                "change-pacer-username": "<h2>Change PACER Username</h2><p>Form to change PACER username goes here.</p>",
+                "change-pacer-password": "<h2>Change PACER Password</h2><p>Form to change PACER password goes here.</p>"
+            };
+            document.getElementById("content").innerHTML = content[page] || "<h2>Page not found</h2>";
+        }
+
+        function logout() {
+            fetch('/admin/logout', { method: 'POST', credentials: 'same-origin' })
+                .then(response => response.json())
+                .then(data => { alert(data.message); window.location.href = '/'; })
+                .catch(error => console.error('Error:', error));
+        }
 
         function deleteCase(caseNumber) {
             // Open the modal and set the message dynamically
@@ -111,47 +185,6 @@
             };
         }
 
-        // Fetch cases and populate the table
-        async function fetchCases() {
-            try {
-                const response = await fetch('/cases/get_all_cases');
-                const data = await response.json();
-                const tableBody = document.getElementById('cases-table-body');
-
-                if (response.ok) {
-                    tableBody.innerHTML = '';
-                    data.cases.forEach((caseItem, index) => {
-                        const row = `
-                            <tr>
-                                <td>${index + 1}</td> <!-- Adding index here -->
-                                <td>${caseItem.case_number}</td>
-                                <td>${caseItem.debtor_name}</td>
-                                <td>${caseItem.court}</td>
-                                <td>${new Date(caseItem.filing_date).toLocaleDateString() || '-'}</td>
-                                <td>${new Date(caseItem.dismissed_date).toLocaleDateString() || '-'}</td>
-                                <td>
-                                    <button type="button" class="button-refresh" onclick="refreshCase('${caseItem.case_number}')">Refresh</button>
-                                    <button type="button" class="button-delete" onclick="deleteCase('${caseItem.case_number}')">Delete</button>
-                                </td>
-                            </tr>
-                        `;
-                        tableBody.innerHTML += row;
-                    });
-
-                } else {
-                    console.error('API Response:', data);
-                    tableBody.innerHTML = `<tr><td colspan="5">Failed to load cases. Please try again later.</td></tr>`;
-                }
-            } catch (error) {
-                console.error('Error fetching cases:', error);
-            }
-        }
-
-        // Show Add Case Modal
-        function showAddCaseForm() {
-            document.getElementById('add-case-modal').style.display = 'block';
-        }
-
         // Hide Add Case Modal
         function hideAddCaseForm() {
             const form = document.getElementById('add-case-form');
@@ -161,11 +194,11 @@
         }
 
         // Submit Add Case Form
-        async function submitAddCaseForm() {
+        async function addCase() {
             const form = document.getElementById('add-case-form');
-            const submitButton = form.querySelector('button[type="button"]');
+            const submitButton = document.getElementById('submit-btn')
             const originalButtonText = submitButton.innerHTML;
-            
+
             const formData = {
                 case_number: form.case_number.value
             };
@@ -221,6 +254,42 @@
             form.case_number.value = ""
         }
 
+        // Fetch cases and populate the table
+        async function fetchCases() {
+            try {
+                const response = await fetch('/cases/get_all_cases');
+                const data = await response.json();
+                const tableBody = document.getElementById('cases-table-body');
+
+                if (response.ok) {
+                    tableBody.innerHTML = '';
+                    data.cases.forEach((caseItem, index) => {
+                        const row = `
+                            <tr>
+                                <td>${index + 1}</td> <!-- Adding index here -->
+                                <td>${caseItem.case_number}</td>
+                                <td>${caseItem.debtor_name}</td>
+                                <td>${caseItem.court}</td>
+                                <td>${new Date(caseItem.filing_date).toLocaleDateString() || '-'}</td>
+                                <td>${new Date(caseItem.dismissed_date).toLocaleDateString() || '-'}</td>
+                                <td>
+                                    <button class="btn btn-info btn-sm" onclick="refreshCase('${caseItem.case_number}')">Refresh</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteCase('${caseItem.case_number}')">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+
+                } else {
+                    console.error('API Response:', data);
+                    tableBody.innerHTML = `<tr><td colspan="5">Failed to load cases. Please try again later.</td></tr>`;
+                }
+            } catch (error) {
+                console.error('Error fetching cases:', error);
+            }
+        }
+
         async function refreshCase(caseNumber) {
             const button = document.querySelector(`button[onclick="refreshCase('${caseNumber}')"]`);
             const originalText = button.innerHTML;
@@ -267,9 +336,9 @@
         }
 
         async function refreshAllCases() {
-            const button = document.querySelector(".refresh-cases-button");
+            const button = document.getElementById("refresh-cases-button");
             const originalText = button.innerHTML;
-            console.log(originalText)
+            
             showLoader(button);
             button.disabled = true; // Disable button
 
@@ -341,8 +410,9 @@
             if (loader) loader.remove();
         }
 
-        // Fetch cases on page load
         fetchCases();
     </script>
+
 </body>
+
 </html>
