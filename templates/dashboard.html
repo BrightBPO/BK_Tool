@@ -5,8 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bankruptcy Case Manager</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="static/css/styles_v2.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 </head>
 
 <body class="bg-light">
@@ -37,8 +40,10 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h1>Bankruptcy Case Manager</h1>
                     <div>
-                        <button id="refresh-cases-button" class="btn btn-primary" onclick="refreshAllCases()">Refresh
-                            Cases</button>
+                        <button id="refresh-cases-button" class="btn btn-primary" onclick="refreshAllCases()">
+                            <span id="refresh-text">Refresh Cases</span>
+                            <i id="refresh-spinner" class="fas fa-spinner fa-spin" style="display: none;"></i>
+                        </button>
                         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#add-case-modal">Add
                             Case</button>
                     </div>
@@ -125,27 +130,30 @@
         }
 
         function logout() {
-            fetch('/admin/logout', { method: 'POST', credentials: 'same-origin' })
-                .then(response => response.json())
-                .then(data => { alert(data.message); window.location.href = '/'; })
-                .catch(error => console.error('Error:', error));
+            fetch('/admin/logout', {
+                 method: 'POST', credentials: 'same-origin' 
+                }
+            )
+            .then(response => response.json())
+            .then(data => {
+                    window.location.href = '/'; 
+                }
+            )
+            .catch(error => console.error('Error:', error));
         }
 
         function deleteCase(caseNumber) {
             // Open the modal and set the message dynamically
-            const modal = document.getElementById('deleteModal');
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal')); // Bootstrap modal instance
             const modalMessage = document.getElementById('modal-message');
             const confirmButton = document.getElementById('confirm-delete');
             const cancelButton = document.getElementById('cancel-delete');
 
             modalMessage.textContent = `Are you sure you want to delete case ${caseNumber}?`;
-            modal.style.display = 'flex';
+            modal.show();
 
             // Confirm delete
             confirmButton.onclick = async function () {
-                modal.style.display = 'none';
-
-                // Proceed with delete API call
                 try {
                     const response = await fetch('/cases/delete_case', {
                         method: 'DELETE',
@@ -169,6 +177,8 @@
                         snackbar.className = "show";
                         setTimeout(() => { snackbar.className = snackbar.className.replace("show", ""); }, 3000);
                     }
+
+                    modal.hide();
                 } catch (error) {
                     console.error('Error deleting case:', error);
 
@@ -181,16 +191,16 @@
 
             // Cancel delete
             cancelButton.onclick = function () {
-                modal.style.display = 'none';
+                modal.hide();
             };
         }
 
-        // Hide Add Case Modal
         function hideAddCaseForm() {
             const form = document.getElementById('add-case-form');
-            form.case_number.value = ""
+            form.case_number.value = ""; // Reset input field
 
-            document.getElementById('add-case-modal').style.display = 'none';
+            let modal = bootstrap.Modal.getInstance(document.getElementById('add-case-modal'));
+            if (modal) modal.hide();
         }
 
         // Submit Add Case Form
@@ -273,8 +283,15 @@
                                 <td>${new Date(caseItem.filing_date).toLocaleDateString() || '-'}</td>
                                 <td>${new Date(caseItem.dismissed_date).toLocaleDateString() || '-'}</td>
                                 <td>
-                                    <button class="btn btn-info btn-sm" onclick="refreshCase('${caseItem.case_number}')">Refresh</button>
-                                    <button class="btn btn-danger btn-sm" onclick="deleteCase('${caseItem.case_number}')">Delete</button>
+                                    <i class="bi bi-arrow-clockwise text-primary me-2" 
+                                        style="cursor:pointer;" 
+                                        onclick="refreshCase('${caseItem.case_number}')" 
+                                        title="Refresh"></i>
+                                    
+                                    <i class="bi bi-trash text-danger" 
+                                        style="cursor:pointer;" 
+                                        onclick="deleteCase('${caseItem.case_number}')" 
+                                        title="Delete"></i>
                                 </td>
                             </tr>
                         `;
@@ -291,11 +308,16 @@
         }
 
         async function refreshCase(caseNumber) {
-            const button = document.querySelector(`button[onclick="refreshCase('${caseNumber}')"]`);
-            const originalText = button.innerHTML;
+            const icon = document.querySelector(`i[onclick="refreshCase('${caseNumber}')"]`);
 
-            showLoader(button);
-            button.disabled = true; // Disable button
+            if (!icon) return; // Prevent errors if icon is not found
+
+            // Create a loader icon
+            const loader = document.createElement("i");
+            loader.className = "fas fa-spinner fa-spin"; // FontAwesome spinning loader
+            loader.style.color = icon.style.color; // Maintain same color as refresh icon
+
+            icon.replaceWith(loader); // Replace refresh icon with loader
 
             try {
                 const formData = { case_number: caseNumber };
@@ -328,18 +350,19 @@
                 setTimeout(() => snackbar.className = snackbar.className.replace("show", ""), 3000);
             }
             finally {
-                // Restore button text and re-enable button
-                hideLoader(button)
-                button.innerHTML = originalText;
-                button.disabled = false;
+                loader.replaceWith(icon); // Restore the refresh icon
             }
         }
 
         async function refreshAllCases() {
             const button = document.getElementById("refresh-cases-button");
+            const text = document.getElementById("refresh-text");
+            const spinner = document.getElementById("refresh-spinner");
             const originalText = button.innerHTML;
+
+            text.style.visibility = "hidden"; // Keep space but hide text
+            spinner.style.display = "inline-block"; // Show spinner
             
-            showLoader(button);
             button.disabled = true; // Disable button
 
             try {
@@ -375,11 +398,11 @@
             } catch (error) {
                 console.error('Error fetching cases:', error);
                 showSnackbar("Error fetching cases.");
+            } finally {
+                text.style.visibility = "visible"; // Restore text
+                spinner.style.display = "none"; // Hide spinner
+                button.disabled = false;
             }
-
-            hideLoader(button)
-            button.innerHTML = originalText;
-            button.disabled = false;
         }
 
         // Utility function for delay
