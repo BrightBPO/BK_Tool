@@ -1,4 +1,59 @@
 import requests
+from flask import Blueprint, jsonify, request
+from flask_login import UserMixin, login_required
+from peewee import Model, CharField, DateTimeField, AutoField
+from db_config import db
+from datetime import datetime
+from werkzeug.security import generate_password_hash
+
+pacer_blueprint = Blueprint('pacer', __name__, url_prefix='/pacer')
+class BaseModel(Model):
+    """
+    Base model that defines the database for all models.
+    """
+    class Meta:
+        database = db
+
+class PacerCredentials(UserMixin, BaseModel):
+    pacer_id = AutoField()
+    username = CharField(null=False)
+    password = CharField(null=False)
+    created_at = DateTimeField(default=lambda: datetime.now())
+
+    class Meta:
+        table_name = 'PacerCredentials'
+
+with db.connection_context():
+        db.create_tables([PacerCredentials])
+
+
+@pacer_blueprint.route('/update-credentials', methods=['POST']) 
+@login_required
+def update_pacer_credentials():
+    try:
+        data = request.json
+        username = data.get("username")
+        password = data.get("password")
+
+        if not username or not password:
+            return jsonify({"error": "Both fields are required"}), 400
+
+        with db.atomic():  # Ensures atomicity
+            PacerCredentials.delete().execute()  # Delete all existing records
+            PacerCredentials.create(username=username, password=generate_password_hash(password))
+
+        return jsonify({"message": "PACER credentials updated successfully!"})
+    
+    except Exception as e:
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
+    
+@pacer_blueprint.route('/get', methods=['GET'])
+@login_required
+def get_pacer_credentials():
+    pacer = PacerCredentials.select().order_by(PacerCredentials.pacer_id.desc()).first()
+    if pacer:
+        return jsonify({"username": pacer.username})
+    return jsonify({"error": "No PACER credentials found"}), 404
 
 # Authenticate with PACER API
 def authenticate_pacer():

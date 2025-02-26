@@ -18,16 +18,11 @@
         <div class="row">
             <!-- Sidebar -->
             <nav class="col-md-3 col-lg-2 d-md-block bg-dark text-white min-vh-100 p-3">
-                <h4 class="mb-4">Dashboard</h4>
+                <h6 class="mb-4">Bankruptcy Case Manager</h6>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a href="#" class="nav-link text-white">Dashboard</a>
-                        <a href="#" class="nav-link text-white" onclick="loadContent('change-password')">Change
-                            Password</a>
-                        <a href="#" class="nav-link text-white" onclick="loadContent('change-pacer-username')">Change
-                            PACER Username</a>
-                        <a href="#" class="nav-link text-white" onclick="loadContent('change-pacer-password')">Change
-                            PACER Password</a>
+                        <a href="#" class="nav-link text-white" onclick="loadContent('dashboard')">Dashboard</a>
+                        <a href="#" class="nav-link text-white" onclick="loadContent('settings')">Settings</a>
                     </li>
                     <li class="nav-item">
                         <button class="btn btn-danger mt-3 w-100" onclick="logout()">Logout</button>
@@ -37,39 +32,74 @@
 
             <!-- Main Content -->
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h1>Bankruptcy Case Manager</h1>
-                    <div>
-                        <button id="refresh-cases-button" class="btn btn-primary" onclick="refreshAllCases()">
-                            <span id="refresh-text">Refresh Cases</span>
-                            <i id="refresh-spinner" class="fas fa-spinner fa-spin" style="display: none;"></i>
-                        </button>
-                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#add-case-modal">Add
-                            Case</button>
+                <div id="dashboard" class="content-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="mb-4">Dashboard</h2>
+                        <div>
+                            <button id="refresh-cases-button" class="btn btn-primary" onclick="refreshAllCases()">
+                                <span id="refresh-text">Refresh Cases</span>
+                                <i id="refresh-spinner" class="fas fa-spinner fa-spin" style="display: none;"></i>
+                            </button>
+                            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#add-case-modal">Add
+                                Case</button>
+                        </div>
+                    </div>
+    
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Case Number</th>
+                                <th>Debtor Name</th>
+                                <th>Court</th>
+                                <th>Filing Date</th>
+                                <th>Dismissed Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cases-table-body">
+                            <!-- Table rows will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Settings -->
+                <div id="settings" class="content-section" style="display: none;">
+                    <h2>Settings</h2>
+
+                    <!-- Change Password Section -->
+                    <div class="mb-4">
+                        <form id="change-password-form" class="p-4 border rounded shadow">
+                            <h5 class="text-center">Change Admin Password</h5>
+                            <div class="mb-3">
+                                <label for="current_password" class="form-label">Current Password</label>
+                                <input type="password" id="current_password" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="new_password" class="form-label">New Password</label>
+                                <input type="password" id="new_password" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Update Password</button>
+                        </form>
+                    </div>                    
+
+                    <!-- Change PACER Credentials Section -->
+                    <div class="mb-4">
+                        <form id="change-pacer-form" class="p-4 border rounded shadow">
+                            <h5 class="text-center">Change PACER Credentials</h5>
+                            <div class="mb-3">
+                                <label for="pacer_username" class="form-label">PACER Username</label>
+                                <input type="text" id="pacer_username" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="pacer_password" class="form-label">PACER Password</label>
+                                <input type="password" id="pacer_password" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Update PACER Credentials</button>
+                        </form>
                     </div>
                 </div>
 
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Case Number</th>
-                            <th>Debtor Name</th>
-                            <th>Court</th>
-                            <th>Filing Date</th>
-                            <th>Dismissed Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cases-table-body">
-                        <!-- Table rows will be dynamically added here -->
-                    </tbody>
-                </table>
-
-                <div id="content">
-                    <h2>Welcome to the Admin Dashboard</h2>
-                    <p>Select an option from the sidebar.</p>
-                </div>
             </main>
         </div>
     </div>
@@ -86,8 +116,7 @@
                     <form id="add-case-form">
                         <div class="mb-3">
                             <label for="case_number" class="form-label">Case Number</label>
-                            <input type="text" id="case_number" name="case_number" class="form-control"
-                                placeholder="Enter Case Number" required>
+                            <input type="text" id="case_number" name="case_number" class="form-control" required>
                         </div>
                         <div class="text-end">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -115,18 +144,78 @@
         </div>
     </div>
 
-    <div id="snackbar"></div>
+    <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+        <div id="toast-message" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toast-text">Error message</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+    
 
     <!-- Bootstrap & Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Fetch PACER credentials and populate username field
+            fetch('/pacer/get')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.username) {
+                        document.getElementById('pacer_username').value = data.username;
+                    }
+                })
+                .catch(error => console.error("Error fetching PACER username:", error));
+
+            // Handle form submission
+            document.getElementById('change-pacer-form').addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const username = document.getElementById('pacer_username').value;
+                const password = document.getElementById('pacer_password').value;
+
+                fetch('/pacer/update-credentials', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        showToast(data.message, 'success');  // Show success toast
+
+                        const form = document.getElementById('change-pacer-form');
+                        form.pacer_password.value = ""; // Reset input field
+                    } else {
+                        showToast(data.message, 'danger');  // Show error toast
+                    }
+                })
+                .catch(error => console.error("Error updating PACER credentials:", error));
+            });
+        });
+
+        // Function to show toast notification
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toast-message');
+            const toastText = document.getElementById('toast-text');
+
+            toastText.innerText = message;
+            toastContainer.className = `toast align-items-center text-white bg-${type} border-0`;
+
+            const toast = new bootstrap.Toast(toastContainer);
+            toast.show();
+        }
+
         function loadContent(page) {
-            const content = {
-                "change-password": "<h2>Change Password</h2><p>Form to change password goes here.</p>",
-                "change-pacer-username": "<h2>Change PACER Username</h2><p>Form to change PACER username goes here.</p>",
-                "change-pacer-password": "<h2>Change PACER Password</h2><p>Form to change PACER password goes here.</p>"
-            };
-            document.getElementById("content").innerHTML = content[page] || "<h2>Page not found</h2>";
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = "none";
+            });
+
+            // Show selected section
+            const selectedSection = document.getElementById(page);
+            selectedSection.style.display = "block";
         }
 
         function logout() {
@@ -164,28 +253,17 @@
                     });
 
                     if (response.ok) {
-                        const snackbar = document.getElementById("snackbar");
-                        snackbar.innerHTML = "Case deleted successfully!";
-                        snackbar.className = "show";
-                        setTimeout(() => { snackbar.className = snackbar.className.replace("show", ""); }, 3000);
-
+                        showToast("Case deleted successfully!", 'success');
                         fetchCases(); // Refresh the table
                     } else {
                         const error = await response.json();
-                        const snackbar = document.getElementById("snackbar");
-                        snackbar.innerHTML = `Error: ${error.error}`;
-                        snackbar.className = "show";
-                        setTimeout(() => { snackbar.className = snackbar.className.replace("show", ""); }, 3000);
+                        showToast(`Error: ${error.error}`, 'danger');
                     }
 
                     modal.hide();
                 } catch (error) {
                     console.error('Error deleting case:', error);
-
-                    const snackbar = document.getElementById("snackbar");
-                    snackbar.innerHTML = `Error deleting case: ${error}`;
-                    snackbar.className = "show";
-                    setTimeout(() => { snackbar.className = snackbar.className.replace("show", ""); }, 3000);
+                    showToast(`Error deleting case: ${error}`, 'danger');
                 }
             };
 
@@ -227,34 +305,16 @@
                 });
 
                 if (response.ok) {
-                    const snackbar = document.getElementById("snackbar");
-                    snackbar.innerHTML = "Case Added Successfully...";
-                    snackbar.className = "show";
-                    setTimeout(function () {
-                        snackbar.className = snackbar.className.replace("show", "");
-                    }, 3000);
-
+                    showToast("Case Added Successfully!", 'success');
                     hideAddCaseForm();
                     fetchCases(); // Refresh the table
                 } else {
                     const error = await response.json();
-
-                    const snackbar = document.getElementById("snackbar");
-                    snackbar.innerHTML = `Error: ${error.error}`;
-                    snackbar.className = "show";
-                    setTimeout(function () {
-                        snackbar.className = snackbar.className.replace("show", "");
-                    }, 3000);
+                    showToast(`Error: ${error.error}`, 'danger');
                 }
             } catch (error) {
                 console.error('Error submitting form:', error);
-
-                const snackbar = document.getElementById("snackbar");
-                snackbar.innerHTML = `Error submitting form: ${error}`;
-                snackbar.className = "show";
-                setTimeout(function () {
-                    snackbar.className = snackbar.className.replace("show", "");
-                }, 3000);
+                showToast(`Error submitting form: ${error}`, 'danger');
             } finally {
                 // Restore button text and re-enable button
                 submitButton.innerHTML = originalButtonText;
@@ -329,25 +389,15 @@
                 });
 
                 if (response.ok) {
-                    const snackbar = document.getElementById("snackbar");
-                    snackbar.innerHTML = "Case Updated Successfully...";
-                    snackbar.className = "show";
-                    setTimeout(() => snackbar.className = snackbar.className.replace("show", ""), 3000);
-
+                    showToast("Case Updated Successfully!", 'success');
                     fetchCases(); // Refresh the table
                 } else {
                     const error = await response.json();
-                    const snackbar = document.getElementById("snackbar");
-                    snackbar.innerHTML = `Error: ${error.error}`;
-                    snackbar.className = "show";
-                    setTimeout(() => snackbar.className = snackbar.className.replace("show", ""), 3000);
+                    showToast(`Error: ${error.error}`, 'danger');
                 }
             } catch (error) {
                 console.error('Error updating case:', error);
-                const snackbar = document.getElementById("snackbar");
-                snackbar.innerHTML = `Error updating case: ${error}`;
-                snackbar.className = "show";
-                setTimeout(() => snackbar.className = snackbar.className.replace("show", ""), 3000);
+                showToast(`Error updating case: ${error}`, 'danger');
             }
             finally {
                 loader.replaceWith(icon); // Restore the refresh icon
@@ -383,12 +433,14 @@
 
                         const result = await caseResponse.json(); // Parse response
 
-                        // Show success/error message
-                        showSnackbar(caseResponse.ok ? "Case Updated Successfully..." : `Error: ${result.error}`);
+                        if (!caseResponse.ok) {
+                            showToast("Error updating case!", 'danger');
+                        }
+                        showToast("Case Updated Successfully!", 'success');
 
                     } catch (error) {
                         console.error('Error updating case:', error);
-                        showSnackbar(`Error updating case: ${error.message}`);
+                        showToast(`Error updating case: ${error.message}`, 'danger');
                     }
 
                     await sleep(500); // Delay .5 send between API calls
@@ -397,7 +449,8 @@
                 fetchCases(); // Refresh the table
             } catch (error) {
                 console.error('Error fetching cases:', error);
-                showSnackbar("Error fetching cases.");
+
+                showToast("Error fetching cases.", 'danger');
             } finally {
                 text.style.visibility = "visible"; // Restore text
                 spinner.style.display = "none"; // Hide spinner
@@ -409,15 +462,6 @@
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
-
-        // Show snackbar message
-        function showSnackbar(message) {
-            const snackbar = document.getElementById("snackbar");
-            snackbar.innerHTML = message;
-            snackbar.className = "show";
-            setTimeout(() => snackbar.className = snackbar.className.replace("show", ""), 3000);
-        }
-
 
         function showLoader(button) {
             button.disabled = true; // Disable the button

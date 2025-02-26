@@ -1,9 +1,11 @@
 from flask import Flask, render_template
-import case_manager
-import admin
 import os
 from flask_mail import Mail
 from flask_login import login_required
+
+import case_manager
+import admin
+import pacer
 
 app = Flask(__name__)
 
@@ -15,6 +17,7 @@ admin.login_manager.session_protection = "strong"
 
 app.register_blueprint(case_manager.case_blueprint)
 app.register_blueprint(admin.admin_blueprint)
+app.register_blueprint(pacer.pacer_blueprint)
 
 # Email Configuration
 app.config["MAIL_SERVER"] = "smtp.gmail.com"
