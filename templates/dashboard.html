@@ -427,19 +427,20 @@
                             body: JSON.stringify(formData),
                         });
 
-                        const result = await caseResponse.json(); // Parse response
+                        const result = await caseResponse.json(); 
 
-                        if (!caseResponse.ok) {
-                            showToast("Error updating case!", 'danger');
+                        if (caseResponse.ok) {
+                            showToast("Case Updated Successfully!", 'success');
+                        } else {
+                            showToast(`Error: ${result.error || "Unknown error"}`, 'danger');
                         }
-                        showToast("Case Updated Successfully!", 'success');
-
+                        
                     } catch (error) {
                         console.error('Error updating case:', error);
                         showToast(`Error updating case: ${error.message}`, 'danger');
                     }
 
-                    await sleep(500); // Delay .5 send between API calls
+                    await sleep(500); // Delay .5 sec between API calls
                 }
 
                 fetchCases(); // Refresh the table
