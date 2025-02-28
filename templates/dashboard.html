@@ -153,6 +153,9 @@
                     if (data.username) {
                         document.getElementById('pacer_username').value = data.username;
                     }
+                    if (data.password) {
+                        document.getElementById('pacer_password').value = data.password;
+                    }
                     if (data.auth_api_url) {
                         document.getElementById('auth_api_url').value = data.auth_api_url;
                     }
@@ -180,9 +183,6 @@
                 .then(data => {
                     if (data.message) {
                         showToast(data.message, 'success');  // Show success toast
-
-                        const form = document.getElementById('change-pacer-form');
-                        form.pacer_password.value = ""; // Reset input field
                     } else {
                         showToast(data.message, 'danger');  // Show error toast
                     }

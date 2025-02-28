@@ -60,6 +60,7 @@ def get_pacer_credentials():
     if pacer:
         return jsonify({
             "username": pacer.username,
+            "password": pacer.password,
             "auth_api_url": pacer.auth_api_url,
             "search_api_url": pacer.search_api_url
         })
