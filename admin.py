@@ -1,7 +1,6 @@
 import random
 import string
-from flask import Blueprint, jsonify, request, session, url_for, redirect
-from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask import Blueprint, jsonify, request
 from peewee import Model, CharField, DateTimeField, AutoField
 from db_config import db
 from datetime import datetime
@@ -11,7 +10,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 admin_blueprint = Blueprint('admin', __name__, url_prefix='/admin')
 
-login_manager = LoginManager()
 class BaseModel(Model):
     """
     Base model that defines the database for all models.
@@ -19,7 +17,7 @@ class BaseModel(Model):
     class Meta:
         database = db
 
-class Admin(UserMixin, BaseModel):
+class Admin(BaseModel):
     admin_id = AutoField()
     email = CharField(unique=True)
     password = CharField(max_length=255)
@@ -31,34 +29,17 @@ class Admin(UserMixin, BaseModel):
     class Meta:
         table_name = 'Admin'
 
-    def get_id(self):
-        return str(self.admin_id)  # Required for Flask-Login
-
 with db.connection_context():
         db.create_tables([Admin])
 
-
-@login_manager.unauthorized_handler
-def unauthorized():
-    return jsonify({"error": "Unauthorized access. Please log in first."}), 401
-
-@login_manager.user_loader
-def load_user(admin_id):
-    with db.connection_context():
-        return Admin.get_or_none(Admin.admin_id == admin_id)
-
 # keep this route disabled once the admin is registered, will be used in future 
 @admin_blueprint.route('/register', methods=['POST']) 
-@login_required
 def register_admin():
     """
     API endpoint to register admin in the database.
     TODO role should not be the input, only SU can change role
     """
     try:
-        if current_user.role != 'super admin':
-            return jsonify({"error": "Unauthorized"}), 403
-    
         data = request.get_json()
 
         # Input Validation
@@ -115,9 +96,6 @@ def login_admin():
         if not admin or not check_password_hash(admin.password, password):
             return jsonify({"message": "Invalid credentials"}), 401
         
-        login_user(admin)  # Maintain session
-        session.modified = True  # Ensure Flask updates session state
-        
         return jsonify({
             'message': 'login successful!',
             'admin': {
@@ -131,22 +109,8 @@ def login_admin():
     except Exception as e:
         return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
-    
-@admin_blueprint.route('/logout', methods=['POST'])
-@login_required
-def logout_admin():
-    try:
-        logout_user()
-        session.pop('_user_id', None)  # Removes only the logged-in user’s session ID
-
-        return jsonify({'message': 'Logged out successfully'}), 200
-    
-    except Exception as e:
-        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
-
 
 @admin_blueprint.route('/profile', methods=['POST'])
-@login_required
 def profile():
     try:
         data = request.get_json()
@@ -159,8 +123,8 @@ def profile():
             
             if not admin:
                 return jsonify({"error": "User not found"}), 404
-        else:  # Default to the currently logged-in user
-            admin = current_user
+        else:
+            return jsonify({"error": "email not found"}), 404
 
         return jsonify({
             'email': admin.email,
@@ -194,8 +158,6 @@ def delete_admin():
                 return jsonify({"message": "Invalid email"}), 404
 
             admin.delete_instance()
-
-        session.pop('_user_id', None)  # Removes only the logged-in user’s session ID
         
         return jsonify({'message': 'Admin deleted successfully!'}), 200
 
@@ -204,7 +166,6 @@ def delete_admin():
 
 
 @admin_blueprint.route('/change-password', methods=['POST'])
-@login_required
 def change_password():
     """
     API endpoint to change admin password 
