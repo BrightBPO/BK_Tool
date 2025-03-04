@@ -28,7 +28,6 @@ class Case(BaseModel):
         table_name = 'Case'
 
 with db.connection_context():
-        db.drop_tables([Case])
         db.create_tables([Case])
 
 
@@ -48,7 +47,7 @@ def refresh_all_cases():
         cases_data = cases_data.get("cases")
         
         if not cases_data:
-            return jsonify({"message": "No case found."}), 404
+            return jsonify({"message": "No case found."}), 200
 
         # Fetch updated case details from PACER for all cases
         case_updates = {}
