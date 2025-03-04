@@ -28,6 +28,7 @@ class Case(BaseModel):
         table_name = 'Case'
 
 with db.connection_context():
+        db.drop_tables([Case])
         db.create_tables([Case])
 
 
