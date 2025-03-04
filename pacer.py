@@ -132,7 +132,7 @@ def search_case(case_number):
 
     token = authenticate_pacer()
     if not token:
-        raise ValueError("PACER token is required.")
+        raise ValueError("PACER authentication failed.")
 
     pacer = get_pacer_()
 

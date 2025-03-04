@@ -412,42 +412,18 @@
             button.disabled = true; // Disable button
 
             try {
-                const response = await fetch('/cases/get_all_cases'); // Fetch cases
-                if (!response.ok) throw new Error('Failed to fetch cases');
+                const response = await fetch('/cases/refresh_all_cases'); // Fetch cases
+                if (!response.ok) throw new Error('Failed to refresh cases');
 
                 const data = await response.json(); // Wait for JSON parsing
 
-                for (const caseItem of data.cases) {
-                    try {
-                        const formData = { case_number: caseItem.case_number };
-
-                        const caseResponse = await fetch('/cases/add_case', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(formData),
-                        });
-
-                        const result = await caseResponse.json(); 
-
-                        if (caseResponse.ok) {
-                            showToast("Case Updated Successfully!", 'success');
-                        } else {
-                            showToast(`Error: ${result.error || "Unknown error"}`, 'danger');
-                        }
-                        
-                    } catch (error) {
-                        console.error('Error updating case:', error);
-                        showToast(`Error updating case: ${error.message}`, 'danger');
-                    }
-
-                    await sleep(500); // Delay .5 sec between API calls
-                }
+                showToast(`${data.message}`, 'success');
 
                 fetchCases(); // Refresh the table
             } catch (error) {
-                console.error('Error fetching cases:', error);
+                console.error('Error refreshing cases:', error);
 
-                showToast("Error fetching cases.", 'danger');
+                showToast("Error refreshing cases.", 'danger');
             } finally {
                 text.style.visibility = "visible"; // Restore text
                 spinner.style.display = "none"; // Hide spinner
