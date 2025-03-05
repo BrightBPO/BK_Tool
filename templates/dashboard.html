@@ -330,14 +330,15 @@
                 if (response.ok) {
                     tableBody.innerHTML = '';
                     data.cases.forEach((caseItem, index) => {
+                        console.log(caseItem.dismissed_date)
                         const row = `
                             <tr>
                                 <td>${index + 1}</td> <!-- Adding index here -->
                                 <td>${caseItem.case_number}</td>
                                 <td>${caseItem.debtor_name}</td>
                                 <td>${caseItem.court}</td>
-                                <td>${new Date(caseItem.filing_date).toLocaleDateString() || '-'}</td>
-                                <td>${new Date(caseItem.dismissed_date).toLocaleDateString() || '-'}</td>
+                                <td>${caseItem.filing_date ? new Date(caseItem.filing_date).toLocaleDateString() : '-'}</td>
+                                <td>${caseItem.dismissed_date ? new Date(caseItem.dismissed_date).toLocaleDateString() : '-'}</td>
                                 <td>
                                     <i class="bi bi-arrow-clockwise text-primary me-2" 
                                         style="cursor:pointer;" 

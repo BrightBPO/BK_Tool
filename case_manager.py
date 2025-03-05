@@ -60,7 +60,7 @@ def refresh_all_cases():
                     "debtor_name": pacer_case_data.get("caseTitle"),
                     "court": pacer_case_data.get("courtId"),
                     "filing_date": pacer_case_data.get("dateFiled"),
-                    "dismissed_date": pacer_case_data.get("dateDischarged", None),
+                    "dismissed_date": pacer_case_data.get("effectiveDateClosed", None),
                     "updated_at": datetime.now()
                 }
 
@@ -114,7 +114,7 @@ def add_case():
         debtor_name = pacer_case_data.get("caseTitle")
         court = pacer_case_data.get("courtId")
         filing_date = pacer_case_data.get("dateFiled")
-        dismissed_date = pacer_case_data.get("dateDischarged", None)
+        dismissed_date = pacer_case_data.get("effectiveDateClosed", None)
 
         with db.connection_context():
             case, created = Case.get_or_create(
