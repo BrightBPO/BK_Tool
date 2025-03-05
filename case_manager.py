@@ -165,7 +165,7 @@ def get_all_cases():
     try:
         with db.connection_context():
             # Query all cases
-            cases = Case.select()
+            cases = Case.select().order_by(Case.created_at.desc())
 
         # Convert cases to a list of dictionaries
         cases_data = [
