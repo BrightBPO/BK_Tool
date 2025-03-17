@@ -66,7 +66,7 @@
                     <!-- Change PACER Credentials Section -->
                     <div class="mb-4">
                         <form id="change-pacer-form" class="p-4 border rounded shadow">
-                            <h5 class="text-center">Change PACER Credentials</h5>
+                            <h5 class="text-center fw-bold">Change PACER Credentials</h5>
                             <div class="mb-3">
                                 <label for="pacer_username" class="form-label">Username</label>
                                 <input type="text" id="pacer_username" class="form-control">
@@ -86,6 +86,27 @@
                             <button type="submit" class="btn btn-success w-100">Update PACER Credentials</button>
                         </form>
                     </div>
+
+                    <!-- Notes Section -->
+                    <div class="mb-4">
+                        <div id="notes-section" class="p-4 border rounded shadow bg-white">
+                            <h4 class="text-center fw-bold mb-3">Notes</h4>
+                            <div class="p-3 border rounded bg-light">
+                                <h5 class="fw-bold"><i class="bi bi-lock-fill"></i> Authentication</h5>
+                                <ul class="list-unstyled mb-3">
+                                    <li><strong>QA URL:</strong> <a href="https://qa-login.uscourts.gov/services/cso-auth" target="_blank" class="text-primary">https://qa-login.uscourts.gov/services/cso-auth</a></li>
+                                    <li><strong>Production URL:</strong> <a href="https://pacer.login.uscourts.gov/services/cso-auth" target="_blank" class="text-primary">https://pacer.login.uscourts.gov/services/cso-auth</a></li>
+                                </ul>
+
+                                <h5 class="fw-bold mt-3"><i class="bi bi-database-fill"></i> PCL API</h5>
+                                <ul class="list-unstyled">
+                                    <li><strong>QA URL:</strong> <a href="https://qa-login.uscourts.gov/pcl-public-api/rest/cases/find" target="_blank" class="text-primary">https://qa-login.uscourts.gov/pcl-public-api/rest/cases/find</a></li>
+                                    <li><strong>Production URL:</strong> <a href="https://pacer.login.uscourts.gov/pcl-public-api/rest/cases/find" target="_blank" class="text-primary">https://pacer.login.uscourts.gov/pcl-public-api/rest/cases/find</a></li>
+                                </ul>
+                            </div>                                
+                        </div>
+                    </div>
+
                 </div>
 
             </main>
