@@ -94,14 +94,14 @@
                             <div class="p-3 border rounded bg-light">
                                 <h5 class="fw-bold"><i class="bi bi-lock-fill"></i>Authentication</h5>
                                 <ul class="list-unstyled mb-3">
-                                    <li><strong>QA URL:</strong> <a href="#" target="_blank" class="text-primary">https://qa-login.uscourts.gov/services/cso-auth</a></li>
-                                    <li><strong>Production URL:</strong> <a href="#" target="_blank" class="text-primary">https://pacer.login.uscourts.gov/services/cso-auth</a></li>
+                                    <li><strong>QA URL:</strong> <a target="_blank" class="text-primary">https://qa-login.uscourts.gov/services/cso-auth</a></li>
+                                    <li><strong>Production URL:</strong> <a target="_blank" class="text-primary">https://pacer.login.uscourts.gov/services/cso-auth</a></li>
                                 </ul>
 
                                 <h5 class="fw-bold mt-3"><i class="bi bi-database-fill"></i>PCL API</h5>
                                 <ul class="list-unstyled">
-                                    <li><strong>QA URL:</strong> <a href="#" target="_blank" class="text-primary">https://qa-pcl.uscourts.gov/pcl-public-api/rest/cases/find</a></li>
-                                    <li><strong>Production URL:</strong> <a href="#" target="_blank" class="text-primary">https://pcl.uscourts.gov/pcl-public-api/rest/cases/find</a></li>
+                                    <li><strong>QA URL:</strong> <a target="_blank" class="text-primary">https://qa-pcl.uscourts.gov/pcl-public-api/rest/cases/find</a></li>
+                                    <li><strong>Production URL:</strong> <a target="_blank" class="text-primary">https://pcl.uscourts.gov/pcl-public-api/rest/cases/find</a></li>
                                 </ul>
                             </div>                                
                         </div>
@@ -321,15 +321,18 @@
                     body: JSON.stringify(formData),
                 });
 
+                hideAddCaseForm();
+
                 if (response.ok) {
                     showToast("Case Added Successfully!", 'success');
-                    hideAddCaseForm();
                     fetchCases(); // Refresh the table
                 } else {
                     const error = await response.json();
                     showToast(`Error: ${error.error}`, 'danger');
                 }
             } catch (error) {
+                hideAddCaseForm();
+                
                 console.error('Error submitting form:', error);
                 showToast(`Error submitting form: ${error}`, 'danger');
             } finally {
