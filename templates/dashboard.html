@@ -94,14 +94,39 @@
                             <div class="p-3 border rounded bg-light">
                                 <h5 class="fw-bold"><i class="bi bi-lock-fill"></i>Authentication</h5>
                                 <ul class="list-unstyled mb-3">
-                                    <li><strong>QA URL:</strong> <a target="_blank" class="text-primary">https://qa-login.uscourts.gov/services/cso-auth</a></li>
-                                    <li><strong>Production URL:</strong> <a target="_blank" class="text-primary">https://pacer.login.uscourts.gov/services/cso-auth</a></li>
+                                    <li>
+                                        <strong>QA URL:</strong> 
+                                        <a target="_blank" class="text-primary">https://qa-login.uscourts.gov/services/cso-auth</a>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('https://qa-login.uscourts.gov/services/cso-auth')" title="Copy URL">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <strong>Production URL:</strong> 
+                                        <a target="_blank" class="text-primary">https://pacer.login.uscourts.gov/services/cso-auth</a>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('https://pacer.login.uscourts.gov/services/cso-auth')" title="Copy URL">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </li>
                                 </ul>
 
                                 <h5 class="fw-bold mt-3"><i class="bi bi-database-fill"></i>PCL API</h5>
                                 <ul class="list-unstyled">
-                                    <li><strong>QA URL:</strong> <a target="_blank" class="text-primary">https://qa-pcl.uscourts.gov/pcl-public-api/rest/cases/find</a></li>
-                                    <li><strong>Production URL:</strong> <a target="_blank" class="text-primary">https://pcl.uscourts.gov/pcl-public-api/rest/cases/find</a></li>
+                                    <li>
+                                        <strong>QA URL:</strong>
+                                        <a target="_blank" class="text-primary">https://qa-pcl.uscourts.gov/pcl-public-api/rest/cases/find</a>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('https://qa-pcl.uscourts.gov/pcl-public-api/rest/cases/find')" title="Copy URL">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </li>
+                                    
+                                    <li>
+                                        <strong>Production URL:</strong> 
+                                        <a target="_blank" class="text-primary">https://pcl.uscourts.gov/pcl-public-api/rest/cases/find</a>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('https://pcl.uscourts.gov/pcl-public-api/rest/cases/find')" title="Copy URL">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </li>
                                 </ul>
                             </div>                                
                         </div>
@@ -166,6 +191,15 @@
     <!-- Bootstrap & Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied to clipboard', 'success');  // Show success toast
+            }).catch(err => {
+                console.error('Error copying text: ', err);
+                showToast('Error copying text', 'danger');  // Show error toast
+            });
+        }
+        
         document.addEventListener("DOMContentLoaded", function () {
             // Fetch PACER credentials and populate username field
             fetch('/pacer/get')
