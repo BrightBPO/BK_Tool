@@ -14,14 +14,16 @@ class BaseModel(Model):
 
 class PacerCredentials(BaseModel):
     pacer_id = AutoField()
-    username = CharField(null=False)
-    password = CharField(null=False)
-    auth_api_url = CharField(null=False)
-    search_api_url = CharField(null=False)
+    prod_username = CharField(null=True)
+    prod_password = CharField(null=True)
+    qa_username = CharField(null=True)
+    qa_password = CharField(null=True)
+    mode = CharField(choices=[("qa", "QA"), ("prod", "Production")], default="qa")
     created_at = DateTimeField(default=lambda: datetime.now())
-
+    
     class Meta:
         table_name = 'PacerCredentials'
+        
 
 with db.connection_context():
         db.create_tables([PacerCredentials])
@@ -31,23 +33,36 @@ with db.connection_context():
 def update_pacer_credentials():
     try:
         data = request.json
+        mode = data.get("mode") # qa or production
         username = data.get("username")
         password = data.get("password")
-        auth_api_url = data.get("auth_api_url")
-        search_api_url = data.get("search_api_url")
 
-        if not any([username, password, auth_api_url, search_api_url]):  # Ensure at least one field is provided
+        if not any([mode, username, password]): # Ensure at least one field is provided
             return jsonify({"error": "Provide at least one field to update"}), 400
-
+        
         with db.atomic():
-            PacerCredentials.delete().execute()
-            # Create new credentials if none exist
-            PacerCredentials.create(
-                username=username or "lienbright_test",  
-                password=password or "cBCrt6C8rme!vQK",
-                auth_api_url=auth_api_url or "https://qa-login.uscourts.gov/services/cso-auth",
-                search_api_url=search_api_url or "https://qa-pcl.uscourts.gov/pcl-public-api/rest/cases/find"
-            )
+            pacer = get_pacer_()
+
+            if mode == "production":
+                pacer_credentials_dict = {
+                    "mode": mode,
+                    "prod_username": username,
+                    "prod_password": password,
+                }
+            else:
+                pacer_credentials_dict = {
+                    "mode": mode,
+                    "qa_username": username,
+                    "qa_password": password
+                }
+
+            if pacer: # credentials exists than update them 
+                PacerCredentials.update(pacer_credentials_dict).where(
+                    PacerCredentials.pacer_id==pacer["pacer_id"]
+                ).execute()
+            else: # create credentials
+                PacerCredentials.create(**pacer_credentials_dict)
+            
 
         return jsonify({"message": "PACER credentials updated successfully!"})
 
@@ -56,24 +71,22 @@ def update_pacer_credentials():
     
 @pacer_blueprint.route('/get', methods=['GET'])
 def get_pacer_credentials():
-    pacer = PacerCredentials.select().order_by(PacerCredentials.pacer_id.desc()).first()
+    
+    pacer = get_pacer_()
     if pacer:
-        return jsonify({
-            "username": pacer.username,
-            "password": pacer.password,
-            "auth_api_url": pacer.auth_api_url,
-            "search_api_url": pacer.search_api_url
-        })
+        return jsonify(pacer)
     return jsonify({"error": "No PACER credentials found"}), 404
 
 def get_pacer_():
     pacer = PacerCredentials.select().order_by(PacerCredentials.pacer_id.desc()).first()
     if pacer:
         return {
-            "username": pacer.username,
-            "password": pacer.password,
-            "auth_api_url": pacer.auth_api_url,
-            "search_api_url": pacer.search_api_url
+            "pacer_id": pacer.pacer_id,
+            "qa_username": pacer.qa_username,
+            "qa_password": pacer.qa_password,
+            "prod_username": pacer.prod_username,
+            "prod_password": pacer.prod_password,
+            "mode": pacer.mode
         }
     
     return None
