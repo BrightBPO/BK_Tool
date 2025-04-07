@@ -28,41 +28,26 @@ class PacerCredentials(BaseModel):
 with db.connection_context():
         db.create_tables([PacerCredentials])
 
+PRODUCTION_SEARCH_API_URL = "https://pcl.uscourts.gov/pcl-public-api/rest/cases/find"
+QA_SEARCH_API_URL = "https://qa-pcl.uscourts.gov/pcl-public-api/rest/cases/find"
+
+PRODUCTION_AUTH_API_URL = "https://pacer.login.uscourts.gov/services/cso-auth"
+QA_AUTH_API_URL = "https://qa-login.uscourts.gov/services/cso-auth"
 
 @pacer_blueprint.route('/update-credentials', methods=['POST']) 
 def update_pacer_credentials():
     try:
         data = request.json
-        mode = data.get("mode") # qa or production
-        username = data.get("username")
-        password = data.get("password")
-
-        if not any([mode, username, password]): # Ensure at least one field is provided
-            return jsonify({"error": "Provide at least one field to update"}), 400
         
         with db.atomic():
             pacer = get_pacer_()
 
-            if mode == "production":
-                pacer_credentials_dict = {
-                    "mode": mode,
-                    "prod_username": username,
-                    "prod_password": password,
-                }
-            else:
-                pacer_credentials_dict = {
-                    "mode": mode,
-                    "qa_username": username,
-                    "qa_password": password
-                }
-
             if pacer: # credentials exists than update them 
-                PacerCredentials.update(pacer_credentials_dict).where(
+                PacerCredentials.update(**data).where(
                     PacerCredentials.pacer_id==pacer["pacer_id"]
                 ).execute()
             else: # create credentials
-                PacerCredentials.create(**pacer_credentials_dict)
-            
+                PacerCredentials.create(**data)
 
         return jsonify({"message": "PACER credentials updated successfully!"})
 
@@ -99,11 +84,18 @@ def authenticate_pacer():
         if not pacer:
             return None
         
-        # PACER credentials
-        pacer_username = pacer.get("username")
-        pacer_password = pacer.get("password")
+        #get mode and select pacer_username, pacer_password and auth_api_url according to mode
+        mode = pacer.get("mode")
 
-        auth_api_url = pacer.get("auth_api_url")
+        if mode.lower() == "production":
+            # PACER credentials
+            pacer_username = pacer.get("prod_username")
+            pacer_password = pacer.get("prod_password")
+            auth_api_url = PRODUCTION_AUTH_API_URL
+        else:
+            pacer_username = pacer.get("qa_username")
+            pacer_password = pacer.get("qa_password")
+            auth_api_url = QA_AUTH_API_URL
 
         payload = {
             "loginId": pacer_username, 
@@ -149,8 +141,13 @@ def search_case(case_number):
 
     pacer = get_pacer_()
 
-    # API details
-    search_api_url = pacer.get("search_api_url")
+    #check mode and select search API
+    mode = pacer.get("mode")
+
+    if mode.lower() == "production":
+        search_api_url = PRODUCTION_SEARCH_API_URL
+    else:
+        search_api_url = QA_SEARCH_API_URL    
 
     headers = {
         "Content-Type": "application/json",
@@ -179,7 +176,7 @@ def search_case(case_number):
         raise ConnectionError(f"Failed to connect to PACER API: {str(e)}")
 
 
-#resp = search_case("0:2017bk05806")
+#resp = search_case("0:2015bk01946")
 #print(resp)
 
 case_numbers = ["0:2015bk01946", "T:2016bk02360", "0:2015bk01946", "0:2017bk05669", "5:2012bk99999", 
