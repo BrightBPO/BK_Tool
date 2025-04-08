@@ -26,7 +26,6 @@ class PacerCredentials(BaseModel):
         
 
 with db.connection_context():
-        db.drop_tables([PacerCredentials])
         db.create_tables([PacerCredentials])
 
 PRODUCTION_SEARCH_API_URL = "https://pcl.uscourts.gov/pcl-public-api/rest/cases/find"
